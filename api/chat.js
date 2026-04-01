@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
         // Map history to Gemini format
         const contents = history.map(h => ({
