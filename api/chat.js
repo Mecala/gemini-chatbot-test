@@ -18,18 +18,18 @@ export default async function handler(req, res) {
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
         
-        // Use the stable 'v1' API version without 'systemInstruction' to avoid 400 errors
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: 'v1' });
+        // Use the most legacy and stable model 'gemini-pro' to avoid 404 errors found with gemini-1.5-flash
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" }, { apiVersion: 'v1' });
 
-        // Manually inject the persona into the conversation start
+        // Manually inject the persona into the conversation start for maximum compatibility
         const contents = [
             {
                 role: 'user',
-                parts: [{ text: "Bạn là Chuyên gia về AI và AI Agent. Hãy trả lời một cách chuyên nghiệp, thông minh và chỉ tập trung vào các chủ đề liên quan đến AI. Nếu lạc đề, hãy khéo léo dẫn dắt người dùng quay lại chủ đề chính." }]
+                parts: [{ text: "Bạn là Chuyên gia về AI và AI Agent. Chỉ trả lời các câu hỏi về công nghệ AI và Tự động hóa." }]
             },
             {
                 role: 'model',
-                parts: [{ text: "Tôi đã hiểu. Với tư cách là chuyên gia về AI và AI Agent, tôi sẵn sàng hỗ trợ bạn ngay bây giờ về các chủ đề liên quan đến trí tuệ nhân tạo." }]
+                parts: [{ text: "Tôi hiểu. Tôi là Chuyên gia về AI và AI Agent, tôi sẵn sàng giải đáp các thắc mắc của bạn." }]
             }
         ];
 
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
             });
         });
 
-        // Initialize chat with the manually constructed content (effectively setting the system instruction)
+        // Initialize chat
         const chat = model.startChat({ contents: contents });
 
         const result = await chat.sendMessage(message);
