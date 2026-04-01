@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Expert | Chatbot</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="header-icon">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ai-pulse"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            </div>
+            <h1>Bảo mật AI</h1>
+            <p>Vui lòng nhập mật khẩu để truy cập hệ thống</p>
+            <div class="input-group">
+                <input type="password" id="password-input" placeholder="Mật khẩu (123456)">
+                <button id="login-btn">
+                    Đăng nhập
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+            </div>
+            <p id="login-error" class="error-msg"></p>
+        </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div id="chat-container" class="chat-container hidden">
+        <header>
+            <div class="bot-info">
+                <div class="bot-avatar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12L2.1 12.1"></path><path d="M12 12v10"></path><path d="M12 12l8.4 5.4"></path><path d="M12 12l3.5-9.4"></path></svg>
+                </div>
+                <div>
+                    <h2>AI Agent Expert</h2>
+                    <span class="status">Online | Chuyên gia về AI</span>
+                </div>
+            </div>
+            <div class="actions">
+                <button id="clear-chat" title="Xóa lịch sử">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div id="message-list" class="message-list">
+            <div class="message bot-message">
+                Xin chào! Tôi là Chuyên gia về AI và AI Agent. Bạn muốn hỏi điều gì về tương lai của trí tuệ nhân tạo?
+            </div>
+        </div>
+
+        <div id="typing-indicator" class="typing hidden">AI Agent đang suy nghĩ...</div>
+
+        <footer>
+            <div class="input-area">
+                <textarea id="user-input" placeholder="Nhập câu hỏi của bạn về AI và AI Agent..." rows="1"></textarea>
+                <button id="send-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

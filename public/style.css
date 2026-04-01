@@ -1,0 +1,280 @@
+:root {
+    --primary: #4f46e5;
+    --primary-light: #818cf8;
+    --bg: #0b0e14;
+    --card: #161b22;
+    --text: #f0f6fc;
+    --secondary: #30363d;
+    --accent: #00ffcc;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background: radial-gradient(circle at top left, #1a1f2e, var(--bg));
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    transition: opacity 0.5s, visibility 0.5s;
+}
+
+.modal.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.modal-content {
+    background: var(--card);
+    border: 1px solid var(--secondary);
+    border-radius: 2rem;
+    padding: 3rem;
+    max-width: 450px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(79, 70, 229, 0.1);
+}
+
+.header-icon {
+    color: var(--primary-light);
+    margin-bottom: 1.5rem;
+}
+
+.ai-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px var(--primary)); }
+    50% { transform: scale(1.1); filter: drop-shadow(0 0 15px var(--primary-light)); }
+}
+
+h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+p { color: #8b949e; margin-bottom: 2rem; }
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+input[type="password"] {
+    background: #0d1117;
+    border: 2px solid var(--secondary);
+    border-radius: 1rem;
+    padding: 1.2rem;
+    color: white;
+    font-size: 1.1rem;
+    outline: none;
+    transition: all 0.3s;
+}
+
+input[type="password"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(79, 70, 229, 0.2);
+}
+
+#login-btn {
+    background: linear-gradient(135deg, var(--primary), #7c3aed);
+    color: white;
+    border: none;
+    padding: 1.2rem;
+    border-radius: 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+}
+
+.error-msg {
+    color: #f85149;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    font-weight: 600;
+}
+
+/* Chat container */
+.chat-container {
+    background: var(--card);
+    width: 100%;
+    max-width: 900px;
+    height: 90vh;
+    border-radius: 2rem;
+    border: 1px solid var(--secondary);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    opacity: 1;
+    transition: opacity 0.5s;
+}
+
+.chat-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bot-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.bot-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, var(--primary), #a855f7);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h2 { font-size: 1.2rem; font-weight: 700; }
+.status { font-size: 0.75rem; color: #238636; font-weight: 600; }
+
+#clear-chat {
+    background: transparent;
+    border: none;
+    color: #8b949e;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+#clear-chat:hover { background: rgba(255, 255, 255, 0.05); color: #f85149; }
+
+.message-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.message-list::-webkit-scrollbar { width: 6px; }
+.message-list::-webkit-scrollbar-thumb { background: var(--secondary); border-radius: 10px; }
+
+.message {
+    max-width: 80%;
+    padding: 1rem 1.4rem;
+    border-radius: 1.2rem;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    position: relative;
+    animation: slideUp 0.3s cubic-bezier(0, .9, .3, 1.1);
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.bot-message {
+    background: var(--secondary);
+    border-bottom-left-radius: 0.2rem;
+    align-self: flex-start;
+}
+
+.user-message {
+    background: linear-gradient(135deg, var(--primary), #7c3aed);
+    color: white;
+    border-bottom-right-radius: 0.2rem;
+    align-self: flex-end;
+}
+
+.typing {
+    padding: 0 2rem 1rem;
+    font-size: 0.8rem;
+    color: var(--primary-light);
+    font-style: italic;
+}
+
+.typing.hidden { display: none; }
+
+footer {
+    padding: 1.5rem 2rem;
+    background: #0d1117;
+    border-top: 1px solid var(--secondary);
+    border-bottom-left-radius: 2rem;
+    border-bottom-right-radius: 2rem;
+}
+
+.input-area {
+    display: flex;
+    background: var(--secondary);
+    border-radius: 1.2rem;
+    padding: 0.5rem 0.8rem;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.6rem;
+    outline: none;
+    resize: none;
+    font-size: 0.95rem;
+}
+
+#send-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+#send-btn:hover { background: var(--primary-light); transform: rotate(-10deg) scale(1.1); }
+#send-btn:active { transform: scale(0.9); }
+
+@media (max-width: 768px) {
+    .chat-container { height: 100vh; border-radius: 0; }
+    footer { border-radius: 0; }
+}
