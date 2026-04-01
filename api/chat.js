@@ -17,10 +17,15 @@ export default async function handler(req, res) {
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            systemInstruction: "Bạn là Chuyên gia về AI và AI Agent. Hãy trả lời một cách chuyên nghiệp, thông minh và chỉ tập trung vào các chủ đề liên quan đến AI. Nếu lạc đề, hãy khéo léo dẫn dắt người dùng quay lại chủ đề chính."
-        });
+        
+        // Explicitly set apiVersion to 'v1' to avoid the v1beta 404 error
+        const model = genAI.getGenerativeModel(
+            { 
+                model: "gemini-1.5-flash",
+                systemInstruction: "Bạn là Chuyên gia về AI và AI Agent. Hãy trả lời một cách chuyên nghiệp, thông minh và chỉ tập trung vào các chủ đề liên quan đến AI. Nếu lạc đề, hãy khéo léo dẫn dắt người dùng quay lại chủ đề chính."
+            },
+            { apiVersion: 'v1' }
+        );
 
         // Initialize chat with history
         const chat = model.startChat({
