@@ -18,22 +18,31 @@ export default async function handler(req, res) {
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
         
-        // Explicitly set apiVersion to 'v1' to avoid the v1beta 404 error
-        const model = genAI.getGenerativeModel(
-            { 
-                model: "gemini-1.5-flash",
-                systemInstruction: "Bạn là Chuyên gia về AI và AI Agent. Hãy trả lời một cách chuyên nghiệp, thông minh và chỉ tập trung vào các chủ đề liên quan đến AI. Nếu lạc đề, hãy khéo léo dẫn dắt người dùng quay lại chủ đề chính."
-            },
-            { apiVersion: 'v1' }
-        );
+        // Use the stable 'v1' API version without 'systemInstruction' to avoid 400 errors
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: 'v1' });
 
-        // Initialize chat with history
-        const chat = model.startChat({
-            history: history.map(h => ({
+        // Manually inject the persona into the conversation start
+        const contents = [
+            {
+                role: 'user',
+                parts: [{ text: "Bạn là Chuyên gia về AI và AI Agent. Hãy trả lời một cách chuyên nghiệp, thông minh và chỉ tập trung vào các chủ đề liên quan đến AI. Nếu lạc đề, hãy khéo léo dẫn dắt người dùng quay lại chủ đề chính." }]
+            },
+            {
+                role: 'model',
+                parts: [{ text: "Tôi đã hiểu. Với tư cách là chuyên gia về AI và AI Agent, tôi sẵn sàng hỗ trợ bạn ngay bây giờ về các chủ đề liên quan đến trí tuệ nhân tạo." }]
+            }
+        ];
+
+        // Append the actual user chat history
+        history.forEach(h => {
+            contents.push({
                 role: h.role === 'user' ? 'user' : 'model',
                 parts: [{ text: h.content }],
-            })),
+            });
         });
+
+        // Initialize chat with the manually constructed content (effectively setting the system instruction)
+        const chat = model.startChat({ contents: contents });
 
         const result = await chat.sendMessage(message);
         const response = await result.response;
