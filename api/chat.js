@@ -1,4 +1,4 @@
-// Final Diagnostic and High-Compatibility chat.js
+// Multi-Model Auto-Retry Chat Logic
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -14,46 +14,56 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Lỗi: Bạn chưa cấu hình biến GEMINI_API_KEY trên Vercel.' });
     }
 
-    try {
-        // Using the most widely available free model path: v1beta / gemini-1.5-flash
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // List of models to try in order of preference
+    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro", "gemini-1.0-pro"];
+    let lastError = "";
 
-        const contents = history.map(h => ({
-            role: h.role === 'user' ? 'user' : 'model',
-            parts: [{ text: h.content }],
-        }));
+    for (const modelName of modelsToTry) {
+        try {
+            // Using v1beta for widest availability of newer models
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-        contents.push({
-            role: 'user',
-            parts: [{ text: message + " (Trả lời bằng tiếng Việt, tư cách chuyên gia AI và AI Agent)" }],
-        });
+            const contents = history.map(h => ({
+                role: h.role === 'user' ? 'user' : 'model',
+                parts: [{ text: h.content }],
+            }));
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: contents,
-                generationConfig: {
-                    maxOutputTokens: 1024,
-                    temperature: 0.7,
-                }
-            })
-        });
+            contents.push({
+                role: 'user',
+                parts: [{ text: `Bạn là Chuyên gia về AI và AI Agent. Hãy trả lời câu hỏi sau bằng tiếng Việt: ${message}` }],
+            });
 
-        const data = await response.json();
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: contents,
+                    generationConfig: {
+                        maxOutputTokens: 1024,
+                        temperature: 0.7,
+                    }
+                })
+            });
 
-        if (response.ok && data.candidates && data.candidates[0].content) {
-            const reply = data.candidates[0].content.parts[0].text;
-            res.status(200).json({ reply });
-        } else {
-            // Detailed error reporting to help identify the root cause
-            console.error('Google API Error Details:', data);
-            const errorMessage = data.error?.message || 'Lỗi không xác định từ Google.';
-            const errorCode = data.error?.status || response.status;
-            res.status(500).json({ error: `[${errorCode}] AI báo lỗi: ${errorMessage}` });
+            const data = await response.json();
+
+            if (response.ok && data.candidates && data.candidates[0].content) {
+                const reply = data.candidates[0].content.parts[0].text;
+                // Success! Return the response and exit the handler
+                return res.status(200).json({ reply });
+            } else {
+                lastError = data.error?.message || "Unknown error";
+                console.error(`Attempt with model ${modelName} failed: ${lastError}`);
+                // Continue to the next model in the list
+            }
+        } catch (error) {
+            lastError = error.message;
+            console.error(`Network error with model ${modelName}: ${lastError}`);
         }
-    } catch (error) {
-        console.error('Fetch Error:', error);
-        res.status(500).json({ error: "Lỗi kết nối server nội bộ: " + error.message });
     }
+
+    // If we reach here, all models have failed
+    res.status(500).json({ 
+        error: `Tất cả các mô hình AI đều không phản hồi. Lỗi cuối cùng: ${lastError}. Vui lòng kiểm tra lại API Key hoặc khu vực khả dụng của tài khoản Google.` 
+    });
 }
