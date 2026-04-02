@@ -1,4 +1,4 @@
-// Advanced AI Chatbot using Gemini 2.0 Flash (based on diagnostic results)
+// High-Compatibility AI Chatbot using NVIDIA NIM (Llama 3.1 8B)
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -9,64 +9,62 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized: Sai mật khẩu.' });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    // Ensure the Environment Variable on Vercel is exactly GEMINI_API_KEY (or rename as needed)
+    const apiKey = process.env.GEMINI_API_KEY?.trim(); 
     if (!apiKey) {
-        return res.status(500).json({ error: 'Lỗi: Bạn chưa cấu hình biến GEMINI_API_KEY trên Vercel.' });
+        return res.status(500).json({ error: 'Lỗi: Bạn chưa cung cấp NVIDIA API Key chuẩn trên Vercel.' });
     }
 
     try {
-        // Using the high-performance Gemini 2.0 Flash model confirmed in diagnostic
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        const url = "https://integrate.api.nvidia.com/v1/chat/completions";
 
-        const contents = [
-            {
-                role: 'user',
-                parts: [{ text: "Bạn là Chuyên gia về AI và AI Agent. Mọi câu trả lời của bạn phải chuyên nghiệp, thông minh và chỉ tập trung vào các chủ đề liên quan đến AI, AI Agents, Tự động hóa và Công nghệ. Hãy trả lời bằng tiếng Việt." }]
-            },
-            {
-                role: 'model',
-                parts: [{ text: "Tôi đã hiểu rõ. Với tư cách là chuyên gia về AI và AI Agent, tôi sẵn sàng hỗ trợ bạn giải đáp mọi thắc mắc về lĩnh vực này bằng tiếng Việt." }]
+        const messages = [
+            { 
+                role: "system", 
+                content: "Bạn là Chuyên gia về AI và AI Agent. Hãy trả lời một cách thông minh, súc tích bằng tiếng Việt." 
             }
         ];
 
-        // Map existing chat history
+        // Map history to NVIDIA format
         history.forEach(h => {
-            contents.push({
-                role: h.role === 'user' ? 'user' : 'model',
-                parts: [{ text: h.content }],
+            messages.push({
+                role: h.role === 'user' ? 'user' : 'assistant',
+                content: h.content,
             });
         });
 
-        // Add the current message
-        contents.push({
-            role: 'user',
-            parts: [{ text: message }],
-        });
+        // Add user message
+        messages.push({ role: "user", content: message });
 
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json', // Added for better compatibility
+                'Authorization': `Bearer ${apiKey}`
+            },
             body: JSON.stringify({
-                contents: contents,
-                generationConfig: {
-                    maxOutputTokens: 2048,
-                    temperature: 0.7,
-                }
+                model: "meta/llama-3.1-8b-instruct", // Changed to the most compatible and widely available free model
+                messages: messages,
+                temperature: 0.5,
+                max_tokens: 1024,
+                top_p: 1,
+                stream: false
             })
         });
 
         const data = await response.json();
 
-        if (response.ok && data.candidates && data.candidates[0].content) {
-            const reply = data.candidates[0].content.parts[0].text;
+        if (response.ok && data.choices && data.choices[0].message) {
+            const reply = data.choices[0].message.content;
             res.status(200).json({ reply });
         } else {
-            console.error('Gemini API Error Context:', data);
-            const errorMessage = data.error?.message || 'Lỗi không xác định từ hệ thống AI.';
-            res.status(500).json({ error: "AI báo lỗi: " + errorMessage });
+            console.error('NVIDIA API Error:', data);
+            const errorMessage = data.error?.message || `Lỗi ${response.status} từ hệ thống NVIDIA NIM. Hãy kiểm tra lại API Key hoặc quyền truy cập Model.`;
+            res.status(response.status).json({ error: "NVIDIA báo lỗi: " + errorMessage });
         }
     } catch (error) {
-        console.error('Fetch System Error:', error);
-        res.status(500).json({ error: "Lỗi kết nối máy chủ dịch vụ." });
+        console.error('NVIDIA Connection Error:', error);
+        res.status(500).json({ error: "Lỗi kết nối máy chủ NVIDIA NIM." });
     }
 }
