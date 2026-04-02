@@ -1,4 +1,4 @@
-// Multi-Model Auto-Retry Chat Logic
+// Advanced AI Chatbot using Gemini 2.0 Flash (based on diagnostic results)
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -14,56 +14,59 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'Lỗi: Bạn chưa cấu hình biến GEMINI_API_KEY trên Vercel.' });
     }
 
-    // List of models to try in order of preference
-    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro", "gemini-1.0-pro"];
-    let lastError = "";
+    try {
+        // Using the high-performance Gemini 2.0 Flash model confirmed in diagnostic
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
-    for (const modelName of modelsToTry) {
-        try {
-            // Using v1beta for widest availability of newer models
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        const contents = [
+            {
+                role: 'user',
+                parts: [{ text: "Bạn là Chuyên gia về AI và AI Agent. Mọi câu trả lời của bạn phải chuyên nghiệp, thông minh và chỉ tập trung vào các chủ đề liên quan đến AI, AI Agents, Tự động hóa và Công nghệ. Hãy trả lời bằng tiếng Việt." }]
+            },
+            {
+                role: 'model',
+                parts: [{ text: "Tôi đã hiểu rõ. Với tư cách là chuyên gia về AI và AI Agent, tôi sẵn sàng hỗ trợ bạn giải đáp mọi thắc mắc về lĩnh vực này bằng tiếng Việt." }]
+            }
+        ];
 
-            const contents = history.map(h => ({
+        // Map existing chat history
+        history.forEach(h => {
+            contents.push({
                 role: h.role === 'user' ? 'user' : 'model',
                 parts: [{ text: h.content }],
-            }));
-
-            contents.push({
-                role: 'user',
-                parts: [{ text: `Bạn là Chuyên gia về AI và AI Agent. Hãy trả lời câu hỏi sau bằng tiếng Việt: ${message}` }],
             });
+        });
 
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: contents,
-                    generationConfig: {
-                        maxOutputTokens: 1024,
-                        temperature: 0.7,
-                    }
-                })
-            });
+        // Add the current message
+        contents.push({
+            role: 'user',
+            parts: [{ text: message }],
+        });
 
-            const data = await response.json();
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: contents,
+                generationConfig: {
+                    maxOutputTokens: 2048,
+                    temperature: 0.7,
+                }
+            })
+        });
 
-            if (response.ok && data.candidates && data.candidates[0].content) {
-                const reply = data.candidates[0].content.parts[0].text;
-                // Success! Return the response and exit the handler
-                return res.status(200).json({ reply });
-            } else {
-                lastError = data.error?.message || "Unknown error";
-                console.error(`Attempt with model ${modelName} failed: ${lastError}`);
-                // Continue to the next model in the list
-            }
-        } catch (error) {
-            lastError = error.message;
-            console.error(`Network error with model ${modelName}: ${lastError}`);
+        const data = await response.json();
+
+        if (response.ok && data.candidates && data.candidates[0].content) {
+            const reply = data.candidates[0].content.parts[0].text;
+            res.status(200).json({ reply });
+        } else {
+            console.error('Gemini API Error Context:', data);
+            const errorMessage = data.error?.message || 'Lỗi không xác định từ hệ thống AI.';
+            res.status(500).json({ error: "AI báo lỗi: " + errorMessage });
         }
+    } catch (error) {
+        console.error('Fetch System Error:', error);
+        res.status(500).json({ error: "Lỗi kết nối máy chủ dịch vụ." });
     }
-
-    // If we reach here, all models have failed
-    res.status(500).json({ 
-        error: `Tất cả các mô hình AI đều không phản hồi. Lỗi cuối cùng: ${lastError}. Vui lòng kiểm tra lại API Key hoặc khu vực khả dụng của tài khoản Google.` 
-    });
 }
